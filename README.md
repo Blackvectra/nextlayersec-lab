@@ -39,13 +39,17 @@ This isn’t just about better Wi-Fi. It’s about building a **mini SOC** at ho
 
 ## 🗂️ Folder Structure
 /infra-sec-lab
+
 ├── README.md
 
 ├── diagrams/
 
 ├── configs/
+
 │ ├── firewall/
+
 │ ├── switch/
+
 │ └── cloudflare-gateway/
 
 ├── defender-setup/
