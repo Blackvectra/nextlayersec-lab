@@ -4,7 +4,7 @@ Documented home lab with Microsoft Defender, OPNsense, Cloudflare Gateway, VLAN 
 
 This project documents the build-out of my secured home lab environment using enterprise-grade tooling for threat detection, segmentation, and DNS filtering.
 
-## 🔐 Components
+## 🔐 Security Components
 
 - **Microsoft Defender for Business**
   - Endpoint protection (Windows + macOS)
