@@ -70,13 +70,13 @@ Sample entries:
 - [ ] Launch Wazuh or Graylog SIEM integration
 - [ ] Configure full DNS log forwarding + alerting
 - [ ] Implement VLAN-based policy enforcement
-- [ ] Write blog post breakdown at [nextlayersec.dev](https://nextlayersec.dev)
+- [ ] Write blog post breakdown at [nextlayersec.dev](https://nextlayersec.io)
 
 ---
 
 ## 📬 Contact
 
 Built and maintained by [Matthew Levorson](https://linkedin.com/in/mattlevorson)  
-📫 `vector@nextlayersec.io`  
-🌐 [nextlayersec.dev](https://nextlayersec.dev)
+📫 `matthew@nextlayersec.dev`  
+🌐 [nextlayersec.io](https://nextlayersec.io)
 
