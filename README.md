@@ -80,7 +80,7 @@ Sample entries:
 - [ ] Launch Wazuh or Graylog SIEM integration
 - [ ] Configure full DNS log forwarding + alerting
 - [ ] Implement VLAN-based policy enforcement
-- [ ] Write blog post breakdown at [nextlayersec.dev](https://nextlayersec.io)
+- [ ] Write blog post breakdown at [nextlayersec.dev]((https://blackvectra.substack.com/p/home-lab-pro-security-my-layered))
 
 ---
 
