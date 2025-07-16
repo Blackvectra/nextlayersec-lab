@@ -76,7 +76,7 @@ Sample entries:
 
 ## 📬 Contact
 
-Built and maintained by [Matthew Levorson](https://linkedin.com/in/mattlevorson)  
+Built and maintained by [Matthew Levorson](https://nextlayersec.dev)  
 📫 `matthew@nextlayersec.dev`  
 🌐 [nextlayersec.io](https://nextlayersec.io)
 
