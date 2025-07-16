@@ -57,6 +57,7 @@ This isn’t just about better Wi-Fi. It’s about building a **mini SOC** at ho
 ├── siem-setup/
 
 ├── lessons-learned/
+
 └── logs/
 
 ---
