@@ -183,14 +183,15 @@ def create_service(client_id, data):
         cur = conn.execute(
             """INSERT INTO services
                  (client_id, service_name, status, tool_cost, resale_price,
-                  notes, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                  market_value, notes, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 client_id,
                 data["service_name"].strip(),
                 data.get("status", "queued"),
                 _to_money(data.get("tool_cost")),
                 _to_money(data.get("resale_price")),
+                _to_money(data.get("market_value")),
                 (data.get("notes") or "").strip() or None,
                 now,
                 now,
@@ -208,13 +209,14 @@ def update_service(service_id, data):
         conn.execute(
             """UPDATE services SET
                  service_name = ?, status = ?, tool_cost = ?,
-                 resale_price = ?, notes = ?, updated_at = ?
+                 resale_price = ?, market_value = ?, notes = ?, updated_at = ?
                WHERE id = ?""",
             (
                 data["service_name"].strip(),
                 data.get("status", "queued"),
                 _to_money(data.get("tool_cost")),
                 _to_money(data.get("resale_price")),
+                _to_money(data.get("market_value")),
                 (data.get("notes") or "").strip() or None,
                 _now(),
                 service_id,
@@ -342,14 +344,16 @@ def import_registry(payload, replace=True):
                 conn.execute(
                     """INSERT INTO services
                          (client_id, service_name, status, tool_cost,
-                          resale_price, notes, created_at, updated_at)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                          resale_price, market_value, notes,
+                          created_at, updated_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
                         new_id,
                         s.get("service_name"),
                         s.get("status", "queued"),
                         _to_money(s.get("tool_cost")),
                         _to_money(s.get("resale_price")),
+                        _to_money(s.get("market_value")),
                         s.get("notes"),
                         s.get("created_at") or now,
                         s.get("updated_at") or now,

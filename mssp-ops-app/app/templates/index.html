@@ -19,6 +19,14 @@
     </div>
   </header>
 
+  <!-- View switcher: Module 1 (Registry) / Module 2 (Billing) -->
+  <nav class="tabs">
+    <button class="tab active" data-view="registry">Registry</button>
+    <button class="tab" data-view="billing">Billing Value</button>
+  </nav>
+
+  <!-- =================== REGISTRY VIEW (Module 1) =================== -->
+  <section id="view-registry">
   <!-- Toolbar: filter, sort, add, export/import -->
   <section class="toolbar">
     <label>Status
@@ -45,6 +53,34 @@
   <p class="note">Billing / ops metadata only — never PHI. Runs locally; data &amp; exports are gitignored.</p>
 
   <main id="clients"></main>
+  </section>
+
+  <!-- =================== BILLING VIEW (Module 2) =================== -->
+  <section id="view-billing" hidden>
+    <div class="bill-rollup">
+      <div class="metric"><span class="label">Delivered value (latest runs)</span><span class="value" id="billDelivered">$0</span></div>
+      <div class="metric"><span class="label">Charged</span><span class="value" id="billCharged">$0</span></div>
+      <div class="metric"><span class="label">Value gap</span><span class="value gap" id="billGap">$0</span></div>
+      <div class="metric"><span class="label">Roadmap (upsell)</span><span class="value" id="billRoadmap">$0</span></div>
+    </div>
+
+    <p class="note">"What good is it?" — show clients the worth of what they receive vs. what you charge.
+      Each run is saved by month. Value = a service's market value (falls back to resale price).</p>
+
+    <div class="bill-generate">
+      <h3>Generate a monthly run</h3>
+      <div class="bill-form">
+        <label>Client<select id="billClient"></select></label>
+        <label>Period<input id="billPeriod" type="month"></label>
+        <label>Charged amount<input id="billCharge" type="number" step="0.01" min="0"></label>
+        <button class="primary" id="billGenerateBtn">Generate / Update run</button>
+      </div>
+      <div id="billPreview"></div>
+    </div>
+
+    <h3 class="bill-h">Saved runs</h3>
+    <div id="billRuns"></div>
+  </section>
 
   <!-- Client editor modal -->
   <div class="modal-backdrop" id="clientModal" hidden>
@@ -89,6 +125,9 @@
         </label>
         <label>Tool cost (monthly)<input id="serviceCost" type="number" step="0.01" min="0"></label>
         <label>Resale price (monthly)<input id="servicePrice" type="number" step="0.01" min="0"></label>
+        <label>Market value (standalone worth to client)
+          <input id="serviceValue" type="number" step="0.01" min="0" placeholder="powers the billing value story">
+        </label>
         <label>Notes<textarea id="serviceNotes" rows="2"></textarea></label>
         <div class="modal-actions">
           <button type="button" class="ghost" data-close>Cancel</button>

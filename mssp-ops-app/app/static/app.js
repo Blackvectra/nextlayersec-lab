@@ -48,6 +48,7 @@ function renderClient(c) {
       <td><span class="badge ${sClass}">${s.status}</span></td>
       <td class="num">${s.tool_cost == null ? '—' : money(s.tool_cost)}</td>
       <td class="num">${s.resale_price == null ? '—' : money(s.resale_price)}</td>
+      <td class="num">${s.market_value == null ? '—' : money(s.market_value)}</td>
       <td class="num">${money(s.margin)}</td>
       <td class="row-actions">
         <button class="link" data-edit-service='${attr(s)}'>Edit</button>
@@ -72,9 +73,9 @@ function renderClient(c) {
     <table>
       <thead><tr>
         <th>Service</th><th>Status</th><th class="num">Tool cost</th>
-        <th class="num">Resale</th><th class="num">Margin</th><th></th>
+        <th class="num">Resale</th><th class="num">Value</th><th class="num">Margin</th><th></th>
       </tr></thead>
-      <tbody>${rows || '<tr><td colspan="6" class="empty">No service lines yet.</td></tr>'}</tbody>
+      <tbody>${rows || '<tr><td colspan="7" class="empty">No service lines yet.</td></tr>'}</tbody>
     </table>`;
   return card;
 }
@@ -147,6 +148,7 @@ function openServiceModal(clientId, service) {
   $('serviceStatus').value = service ? service.status : 'queued';
   $('serviceCost').value = service && service.tool_cost != null ? service.tool_cost : '';
   $('servicePrice').value = service && service.resale_price != null ? service.resale_price : '';
+  $('serviceValue').value = service && service.market_value != null ? service.market_value : '';
   $('serviceNotes').value = service ? (service.notes || '') : '';
   $('serviceModal').hidden = false;
 }
@@ -160,6 +162,7 @@ async function saveService(e) {
     status: $('serviceStatus').value,
     tool_cost: $('serviceCost').value,
     resale_price: $('servicePrice').value,
+    market_value: $('serviceValue').value,
     notes: $('serviceNotes').value,
   };
   if (id) {
@@ -197,6 +200,93 @@ async function doImport(file) {
 }
 
 // ---------------------------------------------------------------------------
+// Module 2 — Billing Value view
+// ---------------------------------------------------------------------------
+function switchView(view) {
+  document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === view));
+  $('view-registry').hidden = view !== 'registry';
+  $('view-billing').hidden = view !== 'billing';
+  if (view === 'billing') loadBilling();
+}
+
+async function loadBilling() {
+  // Headline rollup across the latest run of each client.
+  const sum = await api('/api/billing/summary');
+  $('billDelivered').textContent = money(sum.delivered_value);
+  $('billCharged').textContent = money(sum.charged_amount);
+  $('billGap').textContent = (sum.value_gap >= 0 ? '+' : '') + money(sum.value_gap);
+  $('billRoadmap').textContent = money(sum.roadmap_value);
+
+  // Populate the client picker from the registry (unfiltered).
+  const dash = await api('/api/dashboard');
+  const sel = $('billClient');
+  const prev = sel.value;
+  sel.innerHTML = dash.clients.map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  if (prev) sel.value = prev;
+  if (!$('billPeriod').value) $('billPeriod').value = new Date().toISOString().slice(0, 7);
+
+  await refreshPreview();
+  await loadRuns();
+}
+
+// Live preview of the value picture for the selected client, before saving.
+async function refreshPreview() {
+  const clientId = $('billClient').value;
+  if (!clientId) { $('billPreview').innerHTML = ''; return; }
+  const p = await api('/api/billing/preview?client_id=' + clientId);
+  if ($('billCharge').value === '') $('billCharge').value = p.suggested_charge;
+  $('billPreview').innerHTML = renderLines(p.lines, p.delivered_value, p.roadmap_value, Number($('billCharge').value || p.suggested_charge));
+}
+
+function renderLines(lines, delivered, roadmap, charged) {
+  const rows = lines.map((l) => `<tr class="${l.counted ? '' : 'dim'}">
+    <td>${escapeHtml(l.service_name)}</td>
+    <td><span class="badge ${l.status === 'active' ? 'service-active' : l.status}">${l.status}</span></td>
+    <td class="num">${money(l.value)}</td>
+    <td>${l.counted ? 'Delivered' : 'Roadmap'}</td>
+  </tr>`).join('');
+  const gap = delivered - charged;
+  return `<table class="bill-table">
+    <thead><tr><th>Service</th><th>Status</th><th class="num">Value</th><th>Counts as</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="4" class="empty">No service lines.</td></tr>'}</tbody>
+    <tfoot>
+      <tr><td colspan="2">Delivered value (active + billable)</td><td class="num">${money(delivered)}</td><td></td></tr>
+      <tr><td colspan="2">Charged</td><td class="num">${money(charged)}</td><td></td></tr>
+      <tr class="gap-row"><td colspan="2">Value gap</td><td class="num">${gap >= 0 ? '+' : ''}${money(gap)}</td><td>${gap > 0 ? 'underpriced' : (gap < 0 ? 'over' : 'even')}</td></tr>
+      <tr><td colspan="2">Roadmap / upsell available</td><td class="num">${money(roadmap)}</td><td></td></tr>
+    </tfoot>
+  </table>`;
+}
+
+async function generateRun() {
+  const payload = {
+    client_id: Number($('billClient').value),
+    period: $('billPeriod').value,
+    charged_amount: $('billCharge').value,
+  };
+  if (!payload.client_id) { alert('Pick a client.'); return; }
+  await api('/api/billing/runs', jsonReq('POST', payload));
+  await loadBilling();
+}
+
+async function loadRuns() {
+  const { runs } = await api('/api/billing/runs');
+  const root = $('billRuns');
+  if (!runs.length) { root.innerHTML = '<div class="empty">No saved runs yet. Generate one above.</div>'; return; }
+  root.innerHTML = `<table class="bill-table runs">
+    <thead><tr><th>Period</th><th>Client</th><th class="num">Delivered</th><th class="num">Charged</th>
+      <th class="num">Gap</th><th class="num">Roadmap</th><th></th></tr></thead>
+    <tbody>${runs.map((r) => `<tr>
+      <td>${r.period}</td><td>${escapeHtml(r.client_name)}</td>
+      <td class="num">${money(r.delivered_value)}</td><td class="num">${money(r.charged_amount)}</td>
+      <td class="num ${r.value_gap > 0 ? 'pos' : (r.value_gap < 0 ? 'neg' : '')}">${r.value_gap >= 0 ? '+' : ''}${money(r.value_gap)}</td>
+      <td class="num">${money(r.roadmap_value)}</td>
+      <td class="row-actions"><button class="link" data-del-run="${r.id}">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ---------------------------------------------------------------------------
 // Event wiring (delegated clicks keep it simple)
 // ---------------------------------------------------------------------------
 document.addEventListener('click', async (e) => {
@@ -221,6 +311,13 @@ document.addEventListener('click', async (e) => {
       loadDashboard();
     }
   }
+  if (t.dataset.view) switchView(t.dataset.view);
+  if (t.dataset.delRun) {
+    if (confirm('Delete this saved run?')) {
+      await api('/api/billing/runs/' + t.dataset.delRun, { method: 'DELETE' });
+      loadBilling();
+    }
+  }
 });
 
 // Reset the duplicate-name confirmation if the operator edits the name again.
@@ -236,5 +333,10 @@ $('sortBy').addEventListener('change', loadDashboard);
 $('exportBtn').addEventListener('click', doExport);
 $('importBtn').addEventListener('click', () => $('importFile').click());
 $('importFile').addEventListener('change', (e) => doImport(e.target.files[0]));
+
+// Billing view controls
+$('billGenerateBtn').addEventListener('click', () => generateRun().catch((err) => alert(err.message)));
+$('billClient').addEventListener('change', () => { $('billCharge').value = ''; refreshPreview().catch(() => {}); });
+$('billCharge').addEventListener('input', () => refreshPreview().catch(() => {}));
 
 loadDashboard().catch((err) => alert(err.message));

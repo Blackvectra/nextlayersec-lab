@@ -11,7 +11,7 @@ import os
 
 from flask import Flask, jsonify, render_template, request, send_file
 
-from . import registry
+from . import billing, registry
 from .db import BASE_DIR, init_db
 
 EXPORTS_DIR = os.path.join(BASE_DIR, "exports")  # gitignored
@@ -99,6 +99,52 @@ def create_app():
     @app.route("/api/services/<int:service_id>", methods=["DELETE"])
     def api_delete_service(service_id):
         registry.delete_service(service_id)
+        return jsonify({"ok": True})
+
+    # -----------------------------------------------------------------------
+    # Module #2 — Value & Billing Justification (monthly runs)
+    # -----------------------------------------------------------------------
+    @app.route("/api/billing/summary")
+    def api_billing_summary():
+        return jsonify(billing.portfolio_summary())
+
+    @app.route("/api/billing/runs")
+    def api_list_runs():
+        client_id = request.args.get("client_id", type=int)
+        return jsonify({"runs": billing.list_runs(client_id=client_id)})
+
+    @app.route("/api/billing/preview")
+    def api_preview_run():
+        client_id = request.args.get("client_id", type=int)
+        preview = billing.preview_run(client_id)
+        if preview is None:
+            return jsonify({"error": "Client not found."}), 404
+        return jsonify(preview)
+
+    @app.route("/api/billing/runs", methods=["POST"])
+    def api_generate_run():
+        data = request.get_json(force=True)
+        try:
+            run_id = billing.generate_run(
+                client_id=data.get("client_id"),
+                period=data.get("period"),
+                charged_amount=data.get("charged_amount"),
+                notes=data.get("notes"),
+            )
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+        return jsonify(billing.get_run(run_id)), 201
+
+    @app.route("/api/billing/runs/<int:run_id>")
+    def api_get_run(run_id):
+        run = billing.get_run(run_id)
+        if run is None:
+            return jsonify({"error": "Run not found."}), 404
+        return jsonify(run)
+
+    @app.route("/api/billing/runs/<int:run_id>", methods=["DELETE"])
+    def api_delete_run(run_id):
+        billing.delete_run(run_id)
         return jsonify({"ok": True})
 
     # -----------------------------------------------------------------------

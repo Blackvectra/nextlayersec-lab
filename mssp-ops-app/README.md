@@ -2,8 +2,9 @@
 
 A local, single-operator business-operations app for running a small MSSP.
 Zero recurring cost, no cloud — it runs entirely on your laptop and stores data
-in a local SQLite file. This is the **foundation + Module&nbsp;1 (Client &
-Service Registry)**; it's structured so further modules can be added cleanly.
+in a local SQLite file. It currently ships the **foundation + Module&nbsp;1
+(Client & Service Registry)** and **Module&nbsp;2 (Value & Billing
+Justification)**; it's structured so further modules can be added cleanly.
 
 ## Stack
 
@@ -42,6 +43,30 @@ To start over from scratch, stop the app, delete `mssp.db`, and run again.
 
 Margin (`resale_price − tool_cost`) is **computed at read time, never stored.**
 
+## Module 2 — Value & Billing Justification
+
+The "what good is it?" module. Its purpose is to show a client the worth of
+everything they receive versus what you actually charge — so a flat price you
+suspect is too low has a number behind it.
+
+- Each service line carries a **`market_value`** (its standalone/retail worth to
+  the client). Where it's blank, value falls back to the resale price.
+- For a client you **generate a monthly run**: it snapshots the whole service
+  stack and computes **delivered value** (worth of `active` + `billable` lines),
+  **charged amount** (what you actually bill — defaults to the sum of billable
+  resale prices), the **value gap** (delivered − charged; a positive gap is your
+  "you're getting $X for $200" argument), and **roadmap value** (worth of
+  `queued` lines = your upsell).
+- Runs are **saved by month** (`billing_runs` + `billing_run_lines`), one per
+  client per period; re-running a month overwrites it. The frozen line-item
+  snapshot means history stays accurate even after you change the live config —
+  and it's exactly what a future compliance-evidence log will read from.
+- The Billing view shows a portfolio rollup (latest run per client), a live
+  preview before saving, and the table of saved runs.
+
+Seeded `market_value` figures on the queued Cornerpost services are **example
+placeholders** — edit them to your real pricing.
+
 ### Service / client statuses
 
 - Client: `active`, `prospect`, `inactive`
@@ -71,8 +96,9 @@ mssp-ops-app/
 ├── .gitignore          # excludes *.db, exports/, *.export.json, etc.
 └── app/
     ├── __init__.py     # Flask app factory + JSON API routes
-    ├── db.py           # connection + first-run init from schema/seed
+    ├── db.py           # connection + first-run init from schema/seed + migrations
     ├── registry.py     # Module 1 logic: CRUD, name guard, rollups, export/import
+    ├── billing.py      # Module 2 logic: monthly value runs + portfolio summary
     ├── templates/index.html
     └── static/{app.js, style.css}
 ```
@@ -84,9 +110,9 @@ domain module (`app/registry.py`) and a shared `app/db.py`. Future modules slot
 in as sibling domain modules with their own route groups and, where needed,
 additional tables added to `schema.sql`:
 
-- a **billing-decision engine** would read the same `services` table and layer
-  on rules (e.g. promote `queued`→`billable`, flag thin margins) in a new
-  `app/billing.py`;
+- the **billing-decision / value engine** (Module 2, `app/billing.py`) is built
+  on this pattern: a domain module + its own route group + a UI tab, sharing the
+  same `services` table;
 - a **deliverable generator** and a **quote/contract generator** would each be a
   new domain module that reads client/service rows and renders documents,
   exposed through new routes and a new UI section in the existing single page.

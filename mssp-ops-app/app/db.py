@@ -38,6 +38,8 @@ def init_db():
         with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
             conn.executescript(f.read())
 
+        _migrate(conn)
+
         if is_new:
             with open(SEED_PATH, "r", encoding="utf-8") as f:
                 conn.executescript(f.read())
@@ -46,3 +48,15 @@ def init_db():
         conn.close()
 
     return is_new
+
+
+def _migrate(conn):
+    """Apply additive schema changes to databases created by older versions.
+
+    SQLite can't add a column via CREATE TABLE IF NOT EXISTS, so columns added
+    after a DB was first built are patched in here. Kept simple and additive —
+    no destructive migrations.
+    """
+    cols = {row["name"] for row in conn.execute("PRAGMA table_info(services)")}
+    if "market_value" not in cols:
+        conn.execute("ALTER TABLE services ADD COLUMN market_value REAL")
