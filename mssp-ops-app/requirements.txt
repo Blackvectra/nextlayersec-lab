@@ -1,0 +1,3 @@
+# MSSP Ops App dependencies. SQLite ships with Python's standard library, so
+# the only third-party requirement is the web framework.
+Flask>=3.0,<4.0

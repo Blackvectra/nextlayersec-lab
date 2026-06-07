@@ -1,0 +1,22 @@
+# MSSP Ops App — version code only, NEVER live client/pricing data.
+
+# Databases (the populated DB is built locally from schema.sql + seed.sql)
+*.db
+*.sqlite
+*.sqlite3
+
+# JSON backups / exports
+exports/
+*.export.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
