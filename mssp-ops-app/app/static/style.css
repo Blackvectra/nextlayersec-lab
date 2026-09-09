@@ -1,0 +1,136 @@
+/* MSSP Ops App — minimal styling. Plain CSS, no build step. */
+:root {
+  --bg: #0f1419;
+  --panel: #1a212b;
+  --panel-2: #222c38;
+  --border: #2d3a49;
+  --text: #e6edf3;
+  --muted: #8b98a9;
+  --accent: #4f9cf9;
+  --good: #3fb950;
+  --warn: #d29922;
+  --bad: #f85149;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 24px; background: var(--panel); border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 12px;
+}
+h1 { margin: 0; font-size: 20px; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.rollup { display: flex; gap: 24px; }
+.metric { display: flex; flex-direction: column; align-items: flex-end; }
+.metric .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.metric .value { font-size: 20px; font-weight: 600; }
+
+.toolbar {
+  display: flex; align-items: center; gap: 12px; padding: 14px 24px; flex-wrap: wrap;
+}
+.toolbar label { color: var(--muted); font-size: 12px; display: flex; gap: 6px; align-items: center; }
+.toolbar .spacer { flex: 1; }
+
+.note { margin: 0 24px 14px; color: var(--muted); font-size: 12px; }
+
+select, input, textarea {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 8px; font: inherit;
+}
+button {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer; font: inherit;
+}
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #08111f; font-weight: 600; }
+button.ghost { background: transparent; }
+button.link { background: none; border: none; color: var(--accent); padding: 2px 6px; }
+
+main { padding: 0 24px 48px; }
+
+.client-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 16px; overflow: hidden;
+}
+.client-head {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.client-head h3 { margin: 0; font-size: 16px; }
+.client-head .domain { color: var(--muted); font-size: 12px; }
+.client-head .spacer { flex: 1; }
+.client-money { text-align: right; font-size: 12px; color: var(--muted); }
+.client-money strong { color: var(--text); font-size: 14px; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 9px 16px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px;
+  font-weight: 600; text-transform: capitalize;
+}
+.badge.active, .badge.billable { background: rgba(63,185,80,.15); color: var(--good); }
+.badge.prospect, .badge.queued { background: rgba(210,153,34,.15); color: var(--warn); }
+.badge.inactive { background: rgba(139,152,169,.15); color: var(--muted); }
+.badge.service-active { background: rgba(79,156,249,.15); color: var(--accent); }
+
+.empty { color: var(--muted); padding: 24px; text-align: center; }
+
+/* Modals */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10;
+}
+.modal {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 22px; width: 420px; max-width: 100%;
+}
+.modal h2 { margin: 0 0 14px; font-size: 18px; }
+.modal form { display: flex; flex-direction: column; gap: 10px; }
+.modal label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.modal input, .modal textarea, .modal select { color: var(--text); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.warn {
+  background: rgba(210,153,34,.12); border: 1px solid var(--warn); color: var(--warn);
+  border-radius: 6px; padding: 8px 10px; font-size: 12px;
+}
+.row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+
+/* View tabs (Module switcher) */
+.tabs { display: flex; gap: 4px; padding: 12px 24px 0; }
+.tab {
+  border: 1px solid var(--border); border-bottom: none; background: var(--panel);
+  border-radius: 8px 8px 0 0; padding: 8px 16px; color: var(--muted);
+}
+.tab.active { color: var(--text); background: var(--panel-2); border-color: var(--accent); }
+
+/* Billing view */
+#view-billing { padding: 16px 24px 48px; }
+.bill-rollup { display: flex; gap: 28px; flex-wrap: wrap; padding: 8px 0 4px; }
+.bill-rollup .metric { align-items: flex-start; }
+.value.gap { color: var(--good); }
+.bill-generate {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; margin: 8px 0 24px;
+}
+.bill-generate h3 { margin: 0 0 12px; }
+.bill-form { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+.bill-form label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.bill-h { padding: 0; margin: 0 0 8px; }
+.bill-table { width: 100%; border-collapse: collapse; margin-top: 14px; background: var(--panel); border-radius: 8px; overflow: hidden; }
+.bill-table.runs { margin-top: 0; }
+.bill-table th, .bill-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+.bill-table tr.dim { opacity: .55; }
+.bill-table tfoot td { font-weight: 600; border-top: 2px solid var(--border); }
+.bill-table tfoot tr:not(.gap-row) td { border-bottom: none; }
+.gap-row td { color: var(--good); font-size: 15px; }
+.num.pos { color: var(--good); }
+.num.neg { color: var(--bad); }

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MSSP Ops — Client &amp; Service Registry</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>MSSP Ops</h1>
+      <p class="sub">Client &amp; Service Registry &middot; Module&nbsp;1</p>
+    </div>
+    <div class="rollup" id="rollup">
+      <div class="metric"><span class="label">Total MRR</span><span class="value" id="totalMrr">$0</span></div>
+      <div class="metric"><span class="label">Total Margin</span><span class="value" id="totalMargin">$0</span></div>
+      <div class="metric"><span class="label">Clients</span><span class="value" id="clientCount">0</span></div>
+    </div>
+  </header>
+
+  <!-- View switcher: Module 1 (Registry) / Module 2 (Billing) -->
+  <nav class="tabs">
+    <button class="tab active" data-view="registry">Registry</button>
+    <button class="tab" data-view="billing">Billing Value</button>
+  </nav>
+
+  <!-- =================== REGISTRY VIEW (Module 1) =================== -->
+  <section id="view-registry">
+  <!-- Toolbar: filter, sort, add, export/import -->
+  <section class="toolbar">
+    <label>Status
+      <select id="statusFilter">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="prospect">Prospect</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </label>
+    <label>Sort by
+      <select id="sortBy">
+        <option value="name">Name</option>
+        <option value="status">Status</option>
+      </select>
+    </label>
+    <button id="addClientBtn" class="primary">+ Add Client</button>
+    <span class="spacer"></span>
+    <button id="exportBtn">Export JSON</button>
+    <button id="importBtn">Import JSON</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </section>
+
+  <p class="note">Billing / ops metadata only — never PHI. Runs locally; data &amp; exports are gitignored.</p>
+
+  <main id="clients"></main>
+  </section>
+
+  <!-- =================== BILLING VIEW (Module 2) =================== -->
+  <section id="view-billing" hidden>
+    <div class="bill-rollup">
+      <div class="metric"><span class="label">Delivered value (latest runs)</span><span class="value" id="billDelivered">$0</span></div>
+      <div class="metric"><span class="label">Charged</span><span class="value" id="billCharged">$0</span></div>
+      <div class="metric"><span class="label">Value gap</span><span class="value gap" id="billGap">$0</span></div>
+      <div class="metric"><span class="label">Roadmap (upsell)</span><span class="value" id="billRoadmap">$0</span></div>
+    </div>
+
+    <p class="note">"What good is it?" — show clients the worth of what they receive vs. what you charge.
+      Each run is saved by month. Value = a service's market value (falls back to resale price).</p>
+
+    <div class="bill-generate">
+      <h3>Generate a monthly run</h3>
+      <div class="bill-form">
+        <label>Client<select id="billClient"></select></label>
+        <label>Period<input id="billPeriod" type="month"></label>
+        <label>Charged amount<input id="billCharge" type="number" step="0.01" min="0"></label>
+        <button class="primary" id="billGenerateBtn">Generate / Update run</button>
+      </div>
+      <div id="billPreview"></div>
+    </div>
+
+    <h3 class="bill-h">Saved runs</h3>
+    <div id="billRuns"></div>
+  </section>
+
+  <!-- Client editor modal -->
+  <div class="modal-backdrop" id="clientModal" hidden>
+    <div class="modal">
+      <h2 id="clientModalTitle">Add Client</h2>
+      <form id="clientForm">
+        <input type="hidden" id="clientId">
+        <label>Name *<input id="clientName" required></label>
+        <label>Tenant domain<input id="clientDomain" placeholder="example.com"></label>
+        <label>Primary contact<input id="clientContact"></label>
+        <label>Status
+          <select id="clientStatus">
+            <option value="active">Active</option>
+            <option value="prospect">Prospect</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+        <label>Notes<textarea id="clientNotes" rows="2"></textarea></label>
+        <div class="warn" id="nameWarn" hidden></div>
+        <div class="modal-actions">
+          <button type="button" class="ghost" data-close>Cancel</button>
+          <button type="submit" class="primary" id="clientSaveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Service editor modal -->
+  <div class="modal-backdrop" id="serviceModal" hidden>
+    <div class="modal">
+      <h2 id="serviceModalTitle">Add Service</h2>
+      <form id="serviceForm">
+        <input type="hidden" id="serviceId">
+        <input type="hidden" id="serviceClientId">
+        <label>Service name *<input id="serviceName" required></label>
+        <label>Status
+          <select id="serviceStatus">
+            <option value="queued">Queued</option>
+            <option value="active">Active</option>
+            <option value="billable">Billable</option>
+          </select>
+        </label>
+        <label>Tool cost (monthly)<input id="serviceCost" type="number" step="0.01" min="0"></label>
+        <label>Resale price (monthly)<input id="servicePrice" type="number" step="0.01" min="0"></label>
+        <label>Market value (standalone worth to client)
+          <input id="serviceValue" type="number" step="0.01" min="0" placeholder="powers the billing value story">
+        </label>
+        <label>Notes<textarea id="serviceNotes" rows="2"></textarea></label>
+        <div class="modal-actions">
+          <button type="button" class="ghost" data-close>Cancel</button>
+          <button type="submit" class="primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
